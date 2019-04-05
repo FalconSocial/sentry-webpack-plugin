@@ -124,6 +124,10 @@ class SentryCliPlugin {
       outputDebug('DRY Run Mode');
 
       return {
+        execute: args => {
+            outputDebug('Executing args:\n', args);
+            return Promise.resolve("");
+        },
         releases: {
           proposeVersion: () =>
             cli.releases.proposeVersion().then(version => {
@@ -289,7 +293,7 @@ class SentryCliPlugin {
 
   /** Creates and finalizes a release on Sentry. */
   finalizeRelease(compilation) {
-    const { include } = this.options;
+    const { include, associateCommits } = this.options;
 
     if (!include) {
       addCompilationError(compilation, '`include` option is required');
@@ -302,6 +306,11 @@ class SentryCliPlugin {
         release = proposedVersion;
         return this.cli.releases.new(release);
       })
+      .then(() =>
+        associateCommits === true ?
+          this.cli.execute(['releases', 'set-commits', '--auto', release]) :
+          Promise.resolve()
+       )
       .then(() => this.cli.releases.uploadSourceMaps(release, this.options))
       .then(() => this.cli.releases.finalize(release))
       .catch(err => addCompilationError(compilation, err.message));
