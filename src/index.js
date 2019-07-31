@@ -134,7 +134,7 @@ class SentryCliPlugin {
 
       return {
         execute: args => {
-          outputDebug('Executing args:\n', args);
+          this.outputDebug('Executing args:\n', args);
           return Promise.resolve("");
         },
         releases: {
